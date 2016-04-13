@@ -27,10 +27,16 @@
     const workerMap = new Map();
     const thread_onmessage = function onmessage(event) {
 	"use strict";
-	//const transfer = 
-	const fnResult = ({fnReplaceHolder}).call(null, event.data);
+	const move = [];
+	const fnResult = ({fnReplaceHolder}).call(null, event.data, (transferable) => {
+	    move.push(transferable);
+	});
 	Promise.resolve(fnResult).then(function(result) {
-	    postMessage(result);
+	    if(move.length > 0) {
+		postMessage(result, move);		
+	    } else {
+		postMessage(result);
+	    }
 	}).catch(function(error) {
 	    throw error;
 	});
@@ -56,18 +62,16 @@
 	    move = null,
 	    delay = 0}) {
 	    let promise = new Promise(function (resolve, reject) {
-	        setTimeout(function() {
-		    var worker = createWorker(fn);
-		    worker.onmessage = function(event) {
-			resolve(event.data);
-		    };
-		    worker.onerror = reject;
-		    if(!!move) {
-			worker.postMessage(data, move);			
-		    } else {
+		var worker = createWorker(fn);
+		worker.onmessage = function(event) {
+		    resolve(event.data);
+		};
+		worker.onerror = reject;
+		if(!!move) {
+		    worker.postMessage(data, move);			
+		} else {
 			worker.postMessage(data);
-		    }
-		}, delay);
+		}
 	    });
 	    return promise;
 	}
