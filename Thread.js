@@ -24,56 +24,63 @@
         console.log("お使いのブラウザが古すぎるため、並列処理ができません");
         return false;
     }
-    const workerMap = new Map();
     const thread_onmessage = function onmessage(event) {
 	"use strict";
 	const move = [];
-	const fnResult = ({fnReplaceHolder}).call(null, event.data, (transferable) => {
+	const message_id = event.data.message_id;
+	const fnResult = ({fnReplaceHolder}).call(null, event.data.data, transferable => {
 	    move.push(transferable);
 	});
-	Promise.resolve(fnResult).then(function(result) {
+	Promise.resolve(fnResult).then(result => {
 	    if(move.length > 0) {
-		postMessage(result, move);		
+		postMessage({result, message_id}, move);		
 	    } else {
-		postMessage(result);
+		postMessage({result, message_id});
 	    }
-	}).catch(function(error) {
-	    throw error;
-	});
+	}).catch(error => {throw error;});
     };
-    const createWorker = function(fn) {
+    const WorkerMap = new Map();
+    const PromiseMap = new Map();
+    const createWorker = fn => {
 	let fnStr = fn.toString();
-	if(!workerMap.has(fnStr)) {
-	    workerMap.set(fnStr, new exports.Worker(
+	if(!WorkerMap.has(fnStr)) {
+	    let worker = new exports.Worker(
 		exports.URL.createObjectURL(
 		    new Blob([
 			"onmessage = " + thread_onmessage.toString().replace(/{fnReplaceHolder}/, fnStr)
 		    ])
 		)
-	    ));
+	    );
+	    worker.onmessage = event => {
+		let message_id = event.data.message_id;
+		PromiseMap.get(message_id).resolve(event.data.result);
+		PromiseMap.delete(message_id);
+	    };
+	    worker.onerror = error => {
+		PromiseMap.get(message_id).reject(error);
+		PromiseMap.delete(message_id);
+	    };
+	    WorkerMap.set(fnStr, worker);
 	}
-	return workerMap.get(fnStr);
+	return WorkerMap.get(fnStr);
     };
-    
+    let message_id_incrementer = 0;
     exports.Thread = {
 	spawn: function({
 	    data = null,
 	    fn = val => val,
-	    move = null,
-	    delay = 0}) {
-	    let promise = new Promise(function (resolve, reject) {
-		var worker = createWorker(fn);
-		worker.onmessage = function(event) {
-		    resolve(event.data);
-		};
-		worker.onerror = reject;
+	    move = null
+	}) {
+	    let message_id = message_id_incrementer++;
+	    return new Promise((resolve, reject) => {
+		PromiseMap.set(message_id, {resolve, reject});
+		let worker = createWorker(fn);
 		if(!!move) {
-		    worker.postMessage(data, move);			
+		    worker.postMessage({data, message_id}, move);
 		} else {
-			worker.postMessage(data);
+		    worker.postMessage({data, message_id});
 		}
 	    });
-	    return promise;
 	}
     };
 });
