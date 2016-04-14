@@ -24,7 +24,8 @@
     let message_id_incrementer = 0;
     const WorkerMap = new Map();
     const PromiseMap = new Map();
-    const FuncMap = new Map();    
+    const FuncMap = new Map();
+    const QueueMap = new Map();
     let createWorker = null;
     let createFunc = null;
     if (exports.Worker && exports.URL) {
@@ -41,7 +42,16 @@
 	    this.lockStatus = false;
 	    return true;
 	};
-	let cores =  navigator.hardwareConcurrency;
+	exports.Worker.prototype.queuedMessage = null;
+	exports.Worker.prototype.postQueueOrUnlock = function (key) {
+	    let queue = QueueMap.get(key) || [];
+	    let qm = queue.shift();
+	    if(!qm) {
+		return this.unlock();
+	    }
+	    this.postMessage(qm.data, qm.move);
+	};	
+	let cores =  navigator.hardwareConcurrency - 1;
 	WorkerMap.setWorker = (key, worker) => {
 	    let workerPool = WorkerMap.get(key) || [];
 	    if(workerPool.length < cores) {
@@ -51,12 +61,31 @@
 	};
 	WorkerMap.getFreeWorker = key => {
 	    let workerPool = WorkerMap.get(key) || [];
+	    if(workerPool.length < cores) {
+		return null;
+	    }
 	    for(let worker of workerPool) {
 		if(worker.isLocked() === false) {
 		    return worker;
 		}
 	    }
-	    return null;
+	    return false;
+	};
+	WorkerMap.queueMessage = (fn, data, move) => {
+	    let worker = createWorker(fn);
+	    if(worker) {
+		worker.lock();
+		if(!!move) {
+		    worker.postMessage(data, move);
+		} else {
+		    worker.postMessage(data);
+		}
+	    } else {
+		let key = fn.toString();
+		let queue = QueueMap.get(key) || [];
+		queue.push({data, move});
+		QueueMap.set(key, queue);
+	    }
 	};
 	const thread_onmessage = function onmessage(event) {
 	    "use strict";
@@ -75,8 +104,9 @@
 	};
 	createWorker = fn => {
 	    let fnStr = fn.toString();
-	    if(!WorkerMap.getFreeWorker(fnStr)) {
-		let worker = new exports.Worker(
+	    let worker = WorkerMap.getFreeWorker(fnStr);
+	    if(worker === null) {
+		worker = new exports.Worker(
 		    exports.URL.createObjectURL(
 			new Blob([
 			    "onmessage = " + thread_onmessage.toString().replace(/{fnReplaceHolder}/, fnStr)
@@ -87,17 +117,16 @@
 		    let message_id = event.data.message_id;
 		    PromiseMap.get(message_id).resolve(event.data.result);
 		    PromiseMap.delete(message_id);
-		    worker.unlock();
+		    worker.postQueueOrUnlock(fnStr);
 		};
 		worker.onerror = error => {
 		    PromiseMap.get(message_id).reject(error);
 		    PromiseMap.delete(message_id);
-		    worker.unlock();
+		    worker.postQueueOrUnlock(fnStr);
 		};
 		WorkerMap.setWorker(fnStr, worker);
-		return worker;
 	    }
-	    return WorkerMap.getFreeWorker(fnStr);
+	    return worker;
 	};
     } else {
 	createFunc = fn => {
@@ -120,6 +149,8 @@
 		let message_id = message_id_incrementer++;
 		return new Promise((resolve, reject) => {
 		    PromiseMap.set(message_id, {resolve, reject});
+		    WorkerMap.queueMessage(fn, {data, message_id}, move);
+		    /*
 		    let worker = createWorker(fn);
 		    worker.lock();
 		    if(!!move) {
@@ -127,6 +158,7 @@
 		    } else {
 			worker.postMessage({data, message_id});
 		    }
+		    */
 		});
 	    } else {
 		return new Promise((resolve, reject) => {
