@@ -12,9 +12,8 @@
 			console.log(data);
 		    return data;
 		}
-	    }).then(function(result) {
-			console.log(result);
-	    });
+	}).then(function(result) {
+		console.log(result);
 	});
 
 ### with nodejs
@@ -27,9 +26,8 @@
 			console.log(data);
 		    return data;
 		}
-	    }).then(function(result) {
-			console.log(result);
-	    });
+	}).then(function(result) {
+		console.log(result);
 	});
 
 run example from node
@@ -48,7 +46,7 @@ use move option
 		data: data,
 		move: [data.buffer],
 		fn: function(data, move) {
-	            move(data.buffer);
+	        move(data.buffer);
 		    return data;
 		}
 	    }).then(function(data) {
