@@ -1,4 +1,7 @@
-"ust strict";
+"use strict";
+if(!Thread) {
+    var Thread = require("./Thread.js").Thread;
+}
 let count = 10;
 let startTime = Date.now();
 for(let i = 0; i < count; i++) {
@@ -14,3 +17,4 @@ for(let i = 0; i < count; i++) {
 	console.log((Date.now() - startTime) + " ms");
     });
 }
+
