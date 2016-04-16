@@ -1,6 +1,6 @@
 "use strict";
 if(!Thread) {
-    var Thread = require("./Thread.js").Thread;
+    var Thread = require("./lib/Thread.js").Thread;
 }
 let count = 10;
 let startTime = Date.now();
