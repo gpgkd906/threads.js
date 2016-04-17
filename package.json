@@ -1,0 +1,24 @@
+{
+    "name": "thread.js",
+    "version": "0.6.0",
+    "description": "lightweight thread api implementation with es6 api",
+    "main": "lib/Thread.js",
+    "scripts": {
+	"test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+	"type": "git",
+	"url": "git+https://github.com/gpgkd906/thread.js.git"
+    },
+    "keywords": [
+	"thread",
+	"spawn",
+	"worker"
+    ],
+    "author": "chen han",
+    "license": "MIT",
+    "bugs": {
+	"url": "https://github.com/gpgkd906/thread.js/issues"
+    },
+    "homepage": "https://github.com/gpgkd906/thread.js#readme"
+}
