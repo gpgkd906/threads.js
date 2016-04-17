@@ -11,7 +11,7 @@ you could not to be confusion.
 there is only one api: **Thread.spawn**   
 Thread.spawn receives only one parameter, an object like  
 
-```json
+```
 {
 	data: data,
 	move: [tansferable],
