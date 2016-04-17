@@ -84,6 +84,8 @@ for(let i = 0; i < count; i++) {
 		}
     }).then(function(result) {
 		console.log((Date.now() - startTime) + " ms");
+    }).catch(error => {
+    	console.log(error);
     });
 }
 ```
