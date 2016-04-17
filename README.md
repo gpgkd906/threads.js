@@ -69,7 +69,7 @@ use move option to transfer big data without copy-cost.
 let count = 10;
 let startTime = Date.now();
 for(let i = 0; i < count; i++) {
-    let data = new Uint8Array(100*1024*1024);
+    let data = new Uint8Array(50*1024*1024);
     Thread.spawn({
 		data: data,
 		move: [data.buffer],
