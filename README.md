@@ -42,7 +42,7 @@ Thread.spawn({
 ### with nodejs
 
 ```javascript
-var Thread = require("./Thread.js").Thread;
+var Thread = require("threads.js").Thread;
 
 Thread.spawn({
 	data: data,
