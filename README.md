@@ -75,6 +75,9 @@ for(let i = 0; i < count; i++) {
 		move: [data.buffer],
 		fn: function(data, move) {
 			"use strict";
+			for(let i in data) {
+				//do something
+			}
 			move(data.buffer);
 			let result = data;
 	 	  	return result;
