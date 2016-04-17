@@ -20,7 +20,7 @@ Thread.spawn receives only one parameter, an object like
 ```
 and returns a **Promise** object.
 ###Notice
-which **fn** you gived will be run in an **Standalone environment**, so you can not refer to your main context inside the fn.
+which **fn** you give will be run in an **Standalone environment**, so you can not refer to your main context inside the fn.
 
 ### with chrome/firefox
 ```html
