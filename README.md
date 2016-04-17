@@ -90,6 +90,10 @@ for(let i = 0; i < count; i++) {
 }
 ```
 
+#What is next?
+I will replace prototype to Class when Chrome/Firefox/Safari/Edge is ready.  
+and other es6(or es7?) syntax when at least 2 browser support it.
+
 #Issue
 Anything will be receive, please tell me.
 
