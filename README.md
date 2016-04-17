@@ -2,7 +2,7 @@
 
 ## What is thread.js
 threads is a lightweight thread api with es6 syntax.  
-and when you with the latest chrome/firefox, it use WebWorker to **free boost** your application with extra processor.  
+and when you with the latest Chrome/Firefox/Edge, it use WebWorker to **free boost** your application with extra processor.  
 (safari do not support let/const syntax yet so it throw errors, but you can rewrite it to use var syntax--just a little work, if you want.)
 
 ## How to use it
